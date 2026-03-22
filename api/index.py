@@ -1,6 +1,6 @@
 import os
 from datetime import datetime
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template_string
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
 from .qr_generator import qr_bp
@@ -119,6 +119,76 @@ def get_patient_details(id):
         "surname": patient.surname,
         "history": records_list
     })
+
+
+@app.route('/view/<int:patient_id>')
+def view_patient(patient_id):
+    patient = Patient.query.get_or_404(patient_id)
+    full_name = f"{patient.name} {patient.surname}"
+    patient_records = patient.records
+
+    html_template = """
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <script src="https://cdn.tailwindcss.com"></script>
+        <title>{{ full_name }} | Medical Record</title>
+    </head>
+    <body class="bg-[#f6f8fa] text-[#24292f] font-sans antialiased">
+        <div class="max-w-2xl mx-auto md:mt-10 bg-white border border-[#d0d7de] md:rounded-lg shadow-sm">
+
+            <div class="bg-[#24292f] p-6 text-white md:rounded-t-lg">
+                <div class="flex items-center space-x-2 text-sm text-gray-400 mb-2 font-mono">
+                    <span>Database</span>
+                    <span>/</span>
+                    <span class="text-white">PALQR_{{ patient.patient_id }}</span>
+                </div>
+                <h1 class="text-2xl font-bold">{{ full_name }}</h1>
+            </div>
+
+            <div class="p-6">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-4 flex items-center">
+                    <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"></path><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"></path></svg>
+                    Medical Records ({{ patient_records|length }})
+                </h2>
+
+                <div class="space-y-4">
+                    {% for record in patient_records %}
+                    <div class="border border-[#d0d7de] rounded-md p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex flex-col space-y-2">
+                            <div class="flex justify-between items-center">
+                                <span class="text-[11px] font-mono bg-blue-50 text-blue-700 px-2 py-0.5 rounded border border-blue-100 uppercase font-bold">
+                                    Entry #{{ record.record_id }}
+                                </span>
+                                <span class="text-[11px] font-mono text-gray-500">
+                                    {{ record.timestamp.strftime('%Y-%m-%d %H:%M') if record.timestamp else "N/A" }}
+                                </span>
+                            </div>
+                            <p class="text-sm text-gray-800 leading-relaxed">
+                                {{ record.text }}
+                            </p>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-10 bg-gray-50 border-2 border-dashed border-gray-200 rounded-md">
+                        <p class="text-gray-400 text-sm italic font-mono">0 records found for this ID.</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="p-4 border-t border-gray-100 text-center bg-gray-50 md:rounded-b-lg">
+                <p class="text-[10px] text-gray-400 font-mono tracking-tighter uppercase">
+                    PALQR_SYSTEM_v3.2 // NODE_SECURE
+                </p>
+            </div>
+        </div>
+    </body>
+    </html>
+    """
+    return render_template_string(html_template, patient=patient, full_name=full_name, patient_records=patient_records)
 
 if __name__ == '__main__':
     app.run(debug=True)

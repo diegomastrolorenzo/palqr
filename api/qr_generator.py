@@ -18,7 +18,7 @@ def generate_qr(patient_id):
         base_url = base_url.rstrip('/')
 
     # 3. Create the production link
-    target_link = f"{base_url}/patients/{patient_id}"
+    target_link = f"{base_url}/view/{patient_id}"
 
     # 4. Generate the QR Code
     qr = qrcode.QRCode(version=1, box_size=10, border=5)
