@@ -7,21 +7,23 @@ from dotenv import load_dotenv
 load_dotenv()
 app = Flask(__name__)
 
-# --- DATABASE CONFIG ---
 raw_uri = os.environ.get('SUPABASE_POSTGRES_URL')
 
 if raw_uri:
-    # 1. Clean up potential hidden spaces or newlines from .env
+    # 1. Clean whitespace
     uri = raw_uri.strip()
 
-    # 2. SQLAlchemy 1.4+ fix: must be postgresql://
+    # 2. FORCE REMOVE the "supa=" part if it exists
+    if "&supa=" in uri:
+        uri = uri.split("&supa=")[0]
+
+    # 3. Ensure SQLAlchemy-friendly prefix
     if uri.startswith("postgres://"):
         uri = uri.replace("postgres://", "postgresql://", 1)
 
     app.config['SQLALCHEMY_DATABASE_URI'] = uri
 else:
     app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    print("WARNING: No connection string found.")
 
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
