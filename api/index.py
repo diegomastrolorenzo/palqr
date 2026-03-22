@@ -3,7 +3,7 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
-from api.qr_generator import qr_bp
+from .qr_generator import qr_bp
 
 load_dotenv()
 app = Flask(__name__)
