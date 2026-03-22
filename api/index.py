@@ -3,9 +3,12 @@ from datetime import datetime
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from dotenv import load_dotenv
+from qr_generator import qr_bp
 
 load_dotenv()
 app = Flask(__name__)
+app.register_blueprint(qr_bp)
+
 
 raw_uri = os.environ.get('SUPABASE_POSTGRES_URL')
 

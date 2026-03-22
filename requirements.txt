@@ -1,4 +1,6 @@
-flask
-flask-sqlalchemy
+Flask
+Flask-SQLAlchemy
 psycopg2-binary
-dotenv
+python-dotenv
+qrcode
+Pillow
